@@ -498,15 +498,19 @@
       // --- Cookie and Ranking ---
 
         function saveToCookie() {
-            const now = new Date();
-            // 22:00からの経過時間をミリ秒で計算
-            const elapsedTime =  now - baseTime;
+    const now = new Date();
+    // 22:00からの経過時間をミリ秒で計算
+    const elapsedTime =  now - baseTime;
 
-            const data = {
-                name: confirmedName,
-                time: elapsedTime, // ミリ秒単位で保存
-                joinTime: joinTime.toISOString() //参加時間
-            };
+    const data = {
+        name: confirmedName,
+        time: elapsedTime, // ミリ秒単位で保存
+        joinTime: joinTime.toISOString() //参加時間
+    };
+
+    const cookieData = `${encodeURIComponent(data.name)}=${data.time};${data.joinTime};`; //joinTimeも保存
+    document.cookie = cookieData + "path=/;max-age=" + (60 * 60 * 24 * 365);
+}
 
             const cookieData = `${encodeURIComponent(data.name)}=${data.time};${data.joinTime};`; //joinTimeも保存
             document.cookie = cookieData + "path=/;max-age=" + (60 * 60 * 24 * 365);
