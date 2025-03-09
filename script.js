@@ -39,27 +39,29 @@ confirmNameButton.addEventListener('click', confirmAndJoin);
 cancelNameButton.addEventListener('click', cancelJoin);
 
 // --- Time Management ---
+// script.js (getServerTime 関数)
 async function getServerTime() {
     try {
-        const response = await fetch('/api/time'); // VercelのAPIを呼び出す
+        const response = await fetch('/api/time');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        serverTime = new Date(data.time); // そのまま Date オブジェクトにする (JST)
+        // data.time は ISOString (例: "2023-10-28T05:00:00.123+09:00")
+        serverTime = new Date(data.time); // 正しく Date オブジェクトに変換
         lastServerTimeUpdate = Date.now();
         console.log("Server Time (JST):", serverTime);
 
-        // 時刻取得に成功したら、必要な処理をここで実行
         setBaseTime();
         checkTimeAndEnableButton();
         startCountdown();
+
     } catch (error) {
         console.error("Error fetching server time:", error);
-        // フォールバック: サーバー時刻取得失敗時はクライアント時刻を使用
+        // エラー時もJSTで設定
         if (!serverTime) {
             serverTime = new Date();
-            serverTime.setHours(serverTime.getUTCHours() + 9); // クライアント時刻をJSTに
+            serverTime.setHours(serverTime.getUTCHours() + 9);
             lastServerTimeUpdate = Date.now();
             setBaseTime();
             checkTimeAndEnableButton();
