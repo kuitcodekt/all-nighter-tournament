@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,20 +26,19 @@
         .container {
             width: 90%;
             max-width: 600px;
-            padding: 40px; /* Increased padding */
+            padding: 40px;
             box-sizing: border-box;
             text-align: center;
             background-color: #202124;
-            border-radius: 20px; /* More rounded corners */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); /* Stronger shadow */
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
         }
 
         h1 {
-            font-size: 3.5em; /* Larger title */
+            font-size: 3.5em;
             margin-bottom: 0.5em;
             color: #8ab4f8;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            /* Text shadow */
             animation: glow 2s ease-in-out infinite alternate;
         }
 
@@ -56,20 +56,19 @@
             background-color: #3c4043;
             color: #e8eaed;
             border: 2px solid #5f6368;
-            /* Slightly thicker border */
-            border-radius: 10px; /* More rounded input */
-            padding: 15px 20px; /* More padding */
-            margin-bottom: 30px; /* Increased margin */
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 30px;
             width: 100%;
             max-width: 400px;
             box-sizing: border-box;
-            font-size: 1.1em; /* Larger font size */
-            transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Added box-shadow transition */
+            font-size: 1.1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         #nameInput:focus {
             border-color: #8ab4f8;
-            box-shadow: 0 0 8px rgba(138, 180, 248, 0.6); /* Focus glow */
+            box-shadow: 0 0 8px rgba(138, 180, 248, 0.6);
             outline: none;
         }
 
@@ -77,14 +76,14 @@
             background-color: #8ab4f8;
             color: #202124;
             border: none;
-            border-radius: 10px; /* More rounded button */
-            padding: 18px 35px; /* Increased padding */
+            border-radius: 10px;
+            padding: 18px 35px;
             cursor: pointer;
             font-weight: 700;
             width: 100%;
             max-width: 400px;
             box-sizing: border-box;
-            font-size: 1.2em; /* Larger font size */
+            font-size: 1.2em;
             transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
         }
@@ -93,12 +92,12 @@
             background-color: #5f6368;
             cursor: not-allowed;
             box-shadow: none;
-            opacity: 0.7; /* Slightly faded out */
+            opacity: 0.7;
         }
 
         #joinButton:hover:not(:disabled) {
             background-color: #9ac2ff;
-            transform: translateY(-3px); /* More lift on hover */
+            transform: translateY(-3px);
             box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
         }
 
@@ -108,16 +107,16 @@
         }
 
         #timerDisplay {
-            font-size: 3em; /* Larger timer */
+            font-size: 3em;
             margin-top: 30px;
-            margin-bottom: 10px; /* Reduced margin */
+            margin-bottom: 10px;
             color: #e8eaed;
             font-weight: 500;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
         }
 
         #startTimerDisplay {
-            font-size: 1.2em; /* Slightly smaller font */
+            font-size: 1.2em;
             margin-bottom: 40px;
             color: #aaa;
         }
@@ -130,7 +129,7 @@
 
         #rankingTable th,
         #rankingTable td {
-            padding: 15px 20px; /* Increased padding */
+            padding: 15px 20px;
             border-bottom: 1px solid #5f6368;
             text-align: left;
             transition: background-color 0.3s ease;
@@ -139,24 +138,26 @@
         #rankingTable th {
             background-color: #3c4043;
             font-weight: 700;
-            border-radius: 10px 10px 0 0; /* More rounded top corners */
-            color: #e8eaed; /* White text for headers */
+            border-radius: 10px 10px 0 0;
+            color: #e8eaed;
         }
 
         #rankingTable td:first-child {
             font-weight: 700;
-            color: #8ab4f8; /* Highlight rank */
+            color: #8ab4f8;
         }
 
         #rankingTable tr:nth-child(-n+3) td:first-child::before {
             content: "🏆 ";
-             animation: trophy-rotate 2s linear infinite;
+            animation: trophy-rotate 2s linear infinite;
         }
-        @keyframes trophy-rotate{
-            from{
+
+        @keyframes trophy-rotate {
+            from {
                 transform: rotate(0deg);
             }
-            to{
+
+            to {
                 transform: rotate(360deg);
             }
         }
@@ -166,60 +167,88 @@
         }
 
         /* Popup Styles */
-        #popup, #nameConfirmationPopup {
+        #popup,
+        #nameConfirmationPopup {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: #3c4043;
             border: 2px solid #5f6368;
-            border-radius: 15px; /* More rounded corners */
-            padding: 40px 50px; /* Increased padding */
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7); /* Stronger shadow */
+            border-radius: 15px;
+            padding: 40px 50px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
             z-index: 1000;
             display: none;
-            max-width: 95%; /* Increased max-width */
+            max-width: 95%;
             text-align: center;
         }
-        #popup button, #nameConfirmationPopup button {
+
+        #popup button,
+        #nameConfirmationPopup button {
             background-color: #8ab4f8;
             color: #202124;
             border: none;
-            border-radius: 8px; /* More rounded buttons */
-            padding: 15px 30px; /* Increased padding */
+            border-radius: 8px;
+            padding: 15px 30px;
             cursor: pointer;
             font-weight: 600;
-            margin-top: 25px; /* Increased margin */
-            font-size: 1.1em; /* Larger font size */
+            margin-top: 25px;
+            font-size: 1.1em;
             transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
-        #popup button:hover, #nameConfirmationPopup button:hover {
+        #popup button:hover,
+        #nameConfirmationPopup button:hover {
             background-color: #9ac2ff;
-            transform: translateY(-2px); /* More lift on hover */
+            transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
         }
 
         #nameConfirmationPopup p {
-            margin-bottom: 2em; /* Increased margin */
-            font-size: 1.2em; /* Larger font size */
-            line-height: 1.5; /* Increased line height */
+            margin-bottom: 2em;
+            font-size: 1.2em;
+            line-height: 1.5;
         }
 
         #popup p {
-            font-size: 1.3em; /* Larger font size */
-            margin-bottom: 1.5em; /* Increased margin */
+            font-size: 1.3em;
+            margin-bottom: 1.5em;
         }
 
         @media (max-width: 768px) {
-            h1 {  font-size: 2.8em; }
-            #timerDisplay { font-size: 2.5em; }
-            #startTimerDisplay { font-size: 1em; }
-            #rankingTable th, #rankingTable td { padding: 12px 18px; }
-            .container { padding: 30px; }
-            #popup, #nameConfirmationPopup { width: 98%; padding: 30px; }
-            #nameInput, #joinButton{ font-size: 1em; }
+            h1 {
+                font-size: 2.8em;
+            }
+
+            #timerDisplay {
+                font-size: 2.5em;
+            }
+
+            #startTimerDisplay {
+                font-size: 1em;
+            }
+
+            #rankingTable th,
+            #rankingTable td {
+                padding: 12px 18px;
+            }
+
+            .container {
+                padding: 30px;
+            }
+
+            #popup,
+            #nameConfirmationPopup {
+                width: 98%;
+                padding: 30px;
+            }
+
+            #nameInput,
+            #joinButton {
+                font-size: 1em;
+            }
         }
     </style>
 </head>
@@ -230,7 +259,8 @@
         <input type="text" id="nameInput" placeholder="名前を入力してください">
         <button id="joinButton" disabled>参加する</button>
         <div id="timerDisplay">00:00:00</div>
-        <div id="startTimerDisplay"></div>  <table id="rankingTable">
+        <div id="startTimerDisplay"></div>
+        <table id="rankingTable">
             <thead>
                 <tr>
                     <th>順位</th>
@@ -264,12 +294,11 @@
         let isSleeping = false;
         let confirmedName = "";
         let baseTime;
-        let serverTime;
 
         const nameInput = document.getElementById('nameInput');
         const joinButton = document.getElementById('joinButton');
         const timerDisplay = document.getElementById('timerDisplay');
-        const startTimerDisplay = document.getElementById('startTimerDisplay'); // startTimerDisplayに変更
+        const startTimerDisplay = document.getElementById('startTimerDisplay');
         const rankingTable = document.getElementById('rankingTable').getElementsByTagName('tbody')[0];
         const popup = document.getElementById('popup');
         const wakeUpButton = document.getElementById('wakeUpButton');
@@ -277,7 +306,6 @@
         const confirmNameButton = document.getElementById('confirmNameButton');
         const cancelNameButton = document.getElementById('cancelNameButton');
 
-        // Prevent page from sleeping.  NoSleep.jsを直下に配置した場合
         let noSleep = new NoSleep();
 
         function enableNoSleep() {
@@ -289,7 +317,6 @@
         document.addEventListener('touchstart', enableNoSleep, false);
         document.addEventListener('click', enableNoSleep, false);
 
-
         nameInput.addEventListener('input', handleNameInput);
         joinButton.addEventListener('click', showNameConfirmation);
         wakeUpButton.addEventListener('click', confirmWakeUp);
@@ -297,26 +324,23 @@
         cancelNameButton.addEventListener('click', cancelJoin);
 
         // --- Initialization and Time Check ---
-
-        async function getServerTime() {
-            try {
-                const response = await fetch('/api/time');
-                const data = await response.json();
-                serverTime = new Date(data.time);
-                console.log("Server Time:", serverTime);
-                checkTimeAndEnableButton();
-                setInterval(checkTimeAndEnableButton, 60000);
-            } catch (error) {
-                console.error("Error fetching server time:", error);
+        function setBaseTime() {
+            const now = new Date();
+            // JSTに変換 (+9時間)
+            now.setHours(now.getUTCHours() + 9);
+            baseTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0); // JSTでの今日の22時
+             // baseTime が過去の場合、翌日の22時に設定
+            if (now > baseTime) {
+                baseTime.setDate(baseTime.getDate() + 1);
             }
         }
 
         function checkTimeAndEnableButton() {
-            if (!serverTime) return;
+            setBaseTime(); // baseTimeを更新
+            const now = new Date();
+            now.setHours(now.getUTCHours() + 9);
 
-            const now = new Date(serverTime);
             console.log("checkTimeAndEnableButton - now:", now);
-            baseTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
             console.log("checkTimeAndEnableButton - baseTime:", baseTime);
 
             if (hasJoined && isActive) {
@@ -333,23 +357,29 @@
                 joinButton.disabled = true;
                 joinButton.textContent = "参加する";
             }
-
             startCountdown(); // カウントダウン開始/更新
+
         }
 
         function checkIfCanRejoin() {
             const lastJoinDate = localStorage.getItem('lastJoinDate');
-            const now = new Date(serverTime);
+             setBaseTime(); // baseTimeを更新
+            const now = new Date(); // JST
+            now.setHours(now.getUTCHours() + 9);
 
             console.log("checkIfCanRejoin - lastJoinDate:", lastJoinDate);
             console.log("checkIfCanRejoin - now:", now);
 
             if (lastJoinDate) {
                 const lastDate = new Date(lastJoinDate);
+                 lastDate.setHours(lastDate.getUTCHours() + 9);
                 if (now.getDate() !== lastDate.getDate() || now.getMonth() !== lastDate.getMonth() || now.getFullYear() !== lastDate.getFullYear()) {
                     hasJoined = false;
                     isActive = false;
                     localStorage.removeItem('lastJoinDate');
+                     localStorage.removeItem('joinTime'); // joinTimeも削除
+                    localStorage.removeItem('hasJoined'); // hasJoinedも削除
+                    localStorage.removeItem('isActive');  // isActiveも削除
                 } else {
                     joinButton.disabled = true;
                     joinButton.textContent = "再参加は22:00以降";
@@ -359,25 +389,28 @@
 
         // --- Countdown Timer ---
         function startCountdown() {
+            setBaseTime(); // カウントダウンのたびに baseTime を更新
 
+            const now = new Date();
+            now.setHours(now.getUTCHours() + 9);
 
-            const now = new Date(serverTime);
             let diff = baseTime - now;
 
-            // 22:00を過ぎているかどうかの判定をここで行う
             if (diff < 0) {
-                startTimerDisplay.textContent = "開始しました！"; // 22:00過ぎ
+                startTimerDisplay.textContent = "開始しました！";
                 return;
             }
 
             const countdownInterval = setInterval(() => {
-                const now = new Date(serverTime);
+                const now = new Date();
+                now.setHours(now.getUTCHours() + 9); // JSTに
                 let diff = baseTime - now;
+
 
                 if (diff < 0) {
                     clearInterval(countdownInterval);
-                    startTimerDisplay.textContent = "開始しました！"; // 22:00になった瞬間
-                    checkTimeAndEnableButton();
+                    startTimerDisplay.textContent = "開始しました！";
+                    checkTimeAndEnableButton(); // 22:00 になったらボタンの状態を更新
                     return;
                 }
 
@@ -430,37 +463,62 @@
                 confirmedName = storedName;
                 nameInput.value = confirmedName;
                 nameInput.disabled = true;
-                checkTimeAndEnableButton();
             }
         }
+          // ページ読み込み時/リロード時にタイマー、状態を復元
+        window.addEventListener('load', () => {
+            loadConfirmedName(); //名前をロード
+
+            // 以前の状態をlocalStorageから復元
+            hasJoined = localStorage.getItem('hasJoined') === 'true';
+            isActive = localStorage.getItem('isActive') === 'true';
+            const joinTimeStr = localStorage.getItem('joinTime');
+            if (joinTimeStr) {
+                joinTime = new Date(joinTimeStr);
+            }
+
+            checkTimeAndEnableButton(); // 状態をチェック
+
+            if (hasJoined && isActive) {
+                startTimer();     // タイマー再開
+                startPopupChecks(); // ポップアップ再開
+            }
+            enableNoSleep(); // NoSleep有効化
+        });
 
         // --- Core Logic Functions ---
 
         function joinContest() {
             if (hasJoined) return;
 
-            joinTime = new Date();
+            joinTime = new Date(); // JSTで取得
+            joinTime.setHours(joinTime.getUTCHours() + 9);
             hasJoined = true;
             isActive = true;
             isSleeping = false;
             joinButton.disabled = true;
             joinButton.textContent = "参加中";
-            startTimerDisplay.textContent = ""; // 開始までのタイマーを消す
+            startTimerDisplay.textContent = "";
 
-            console.log("joinContest - now", new Date());
+            console.log("joinContest - now", joinTime);
 
             startTimer();
             startPopupChecks();
             saveToCookie();
             updateRanking();
-            localStorage.setItem('lastJoinDate', new Date().toISOString());
+            localStorage.setItem('lastJoinDate', joinTime.toISOString());
+             // 状態をlocalStorageに保存
+            localStorage.setItem('hasJoined', 'true');
+            localStorage.setItem('isActive', 'true');
+            localStorage.setItem('joinTime', joinTime.toISOString());
         }
 
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
 
             timerInterval = setInterval(() => {
-                const now = new Date();
+                const now = new Date(); // JSTで取得
+                now.setHours(now.getUTCHours() + 9);
                 const diff = now - baseTime;
 
                 const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
@@ -494,6 +552,10 @@
                 clearInterval(popupInterval);
                 joinButton.disabled = true;
                 joinButton.textContent = "再参加は22:00以降";
+
+                // localStorageの状態を更新
+                localStorage.setItem('isActive', 'false');
+
             }, 120000);
         }
 
@@ -510,12 +572,13 @@
 
         function saveToCookie() {
             const now = new Date();
+            now.setHours(now.getUTCHours() + 9); // JST
             const elapsedTime = now - baseTime;
 
             const data = {
                 name: confirmedName,
                 time: elapsedTime,
-                joinTime: joinTime.toISOString()
+                joinTime: joinTime.toISOString() //joinTimeは変わらず
             };
 
             const cookieData = `${encodeURIComponent(data.name)}=${data.time};${data.joinTime};`;
@@ -536,6 +599,7 @@
                     try {
                         const time = parseInt(timeString, 10);
                         const joinTime = new Date(joinTimeString);
+                         joinTime.setHours(joinTime.getUTCHours()+9); //ここでJSTに戻す
 
                         if (!isNaN(time) && !isNaN(joinTime.getTime())) {
                             const hours = String(Math.floor(time / (1000 * 60 * 60))).padStart(2, '0');
@@ -572,18 +636,6 @@
                 timeCell.textContent = entry.displayTime;
             });
         }
-
-
-        window.addEventListener('load', () => {
-            getServerTime();
-            if (hasJoined && isActive) {
-                startTimer();
-                startPopupChecks();
-            }
-            loadConfirmedName();
-            enableNoSleep(); // NoSleep有効化
-        });
-
     </script>
     <script src="nosleep.min.js"></script>
 </body>
