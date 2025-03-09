@@ -284,341 +284,295 @@
         <button id="cancelNameButton">キャンセル</button>
     </div>
 
-                        <script>
-    let joinTime;
-    let timerInterval;
-    let popupInterval;
-    let wakeUpCheckTimeout;
-    let hasJoined = false;
-    let isActive = false;
-    let isSleeping = false;
-    let confirmedName = "";
-    let baseTime; // UTCでの22:00を表すDateオブジェクト
+                       <script>
+        let joinTime;
+        let timerInterval;
+        let popupInterval;
+        let wakeUpCheckTimeout;
+        let hasJoined = false;
+        let isActive = false;
+        let isSleeping = false;
+        let confirmedName = "";
+        let baseTime;
+        let serverTime; // サーバー時刻を保持
 
+        const nameInput = document.getElementById('nameInput');
+        const joinButton = document.getElementById('joinButton');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const rankingTable = document.getElementById('rankingTable').getElementsByTagName('tbody')[0];
+        const popup = document.getElementById('popup');
+        const wakeUpButton = document.getElementById('wakeUpButton');
+        const nameConfirmationPopup = document.getElementById('nameConfirmationPopup');
+        const confirmNameButton = document.getElementById('confirmNameButton');
+        const cancelNameButton = document.getElementById('cancelNameButton');
 
-    const nameInput = document.getElementById('nameInput');
-    const joinButton = document.getElementById('joinButton');
-    const timerDisplay = document.getElementById('timerDisplay');
-    const rankingTable = document.getElementById('rankingTable').getElementsByTagName('tbody')[0];
-    const popup = document.getElementById('popup');
-    const wakeUpButton = document.getElementById('wakeUpButton');
-    const nameConfirmationPopup = document.getElementById('nameConfirmationPopup');
-    const confirmNameButton = document.getElementById('confirmNameButton');
-    const cancelNameButton = document.getElementById('cancelNameButton');
+        // Prevent page from sleeping
+        let noSleep = new NoSleep();
 
-    // Prevent page from sleeping
-    let noSleep = new NoSleep();
-
-    function enableNoSleep() {
-        noSleep.enable();
-        document.removeEventListener('touchstart', enableNoSleep, false);
-        document.removeEventListener('click', enableNoSleep, false); //For PC
-    }
-
-    document.addEventListener('touchstart', enableNoSleep, false);
-    document.addEventListener('click', enableNoSleep, false);
-
-
-    nameInput.addEventListener('input', handleNameInput);
-    joinButton.addEventListener('click', showNameConfirmation);
-    wakeUpButton.addEventListener('click', confirmWakeUp);
-    confirmNameButton.addEventListener('click', confirmAndJoin);
-    cancelNameButton.addEventListener('click', cancelJoin);
-
-
-    // --- Initialization and Time Check ---
-    function getJSTDateTime(date) {
-        const jstFormatter = new Intl.DateTimeFormat('ja-JP', {
-            timeZone: 'Asia/Tokyo',
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false // 24時間表示
-        });
-      const parts = jstFormatter.formatToParts(date);
-      const jstDate = {};
-      for (const part of parts) {
-        if (part.type !== 'literal') {
-          jstDate[part.type] = part.value;
-        }
-      }
-       return jstDate
-    }
-
-
-    function checkTimeAndEnableButton() {
-      const now = new Date();
-      const jstNow = getJSTDateTime(now);
-
-
-       // 今日の22:00(JST)のDateオブジェクトを作成
-      baseTime = new Date(Date.UTC(jstNow.year, jstNow.month - 1, jstNow.day, 13, 0, 0)); //UTCで13時がJSTで22時
-
-
-        // 参加済み、かつ、アクティブな場合は、ボタンは常に無効
-        if (hasJoined && isActive) {
-            joinButton.disabled = true;
-            return;
+        function enableNoSleep() {
+            noSleep.enable();
+            document.removeEventListener('touchstart', enableNoSleep, false);
+            document.removeEventListener('click', enableNoSleep, false);
         }
 
-        if (jstNow.hour >= 22 || jstNow.hour < 24) {
-            joinButton.disabled = !confirmedName && nameInput.value.trim() === '';
-            //寝落ち後の再参加チェック
-            checkIfCanRejoin();
+        document.addEventListener('touchstart', enableNoSleep, false);
+        document.addEventListener('click', enableNoSleep, false);
 
-        } else {
-            joinButton.disabled = true;
+        nameInput.addEventListener('input', handleNameInput);
+        joinButton.addEventListener('click', showNameConfirmation);
+        wakeUpButton.addEventListener('click', confirmWakeUp);
+        confirmNameButton.addEventListener('click', confirmAndJoin);
+        cancelNameButton.addEventListener('click', cancelJoin);
+
+        // --- Initialization and Time Check ---
+
+        async function getServerTime() {
+            try {
+                const response = await fetch('/api/time');
+                const data = await response.json();
+                serverTime = new Date(data.time);
+                console.log("Server Time:", serverTime);
+                checkTimeAndEnableButton();
+                setInterval(checkTimeAndEnableButton, 60000);
+            } catch (error) {
+                console.error("Error fetching server time:", error);
+            }
         }
-    }
+        function checkTimeAndEnableButton() {
+            if (!serverTime) return; // サーバー時刻がまだ取得できていなければ何もしない
 
-    function checkIfCanRejoin() {
-        const lastJoinDate = localStorage.getItem('lastJoinDate');
-        const now = new Date();
-        const jstNow = getJSTDateTime(now);
+            const now = new Date(serverTime);
+            console.log("checkTimeAndEnableButton - now:", now);
+            baseTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
+            console.log("checkTimeAndEnableButton - baseTime:", baseTime);
 
-
-        if (lastJoinDate) {
-            const lastDate = new Date(lastJoinDate);
-            const jstLastDate = getJSTDateTime(lastDate)
-            // 日付が変わっていれば再参加可能
-            if (jstNow.day !== jstLastDate.day || jstNow.month !== jstLastDate.month || jstNow.year !== jstLastDate.year) {
-                hasJoined = false; // Reset join status
-                isActive = false;
-                localStorage.removeItem('lastJoinDate'); // Clear the stored date
-            } else {
-                //まだ同じ日なら、寝落ち状態
+            if (hasJoined && isActive) {
                 joinButton.disabled = true;
+                return;
+            }
 
+            if (now.getHours() >= 22 || now.getHours() < 24) {
+                joinButton.disabled = !confirmedName && nameInput.value.trim() === '';
+                checkIfCanRejoin();
+            } else {
+                joinButton.disabled = true;
             }
         }
-    }
 
+        function checkIfCanRejoin() {
+            const lastJoinDate = localStorage.getItem('lastJoinDate');
+            const now = new Date(serverTime); // サーバー時刻を使用
 
+            console.log("checkIfCanRejoin - lastJoinDate:", lastJoinDate);
+            console.log("checkIfCanRejoin - now:", now);
 
-    checkTimeAndEnableButton();
-    setInterval(checkTimeAndEnableButton, 60000);
-
-
-    // --- Name Input and Confirmation ---
-    function handleNameInput() {
-        if (confirmedName) {
-            nameInput.value = confirmedName;
-            return;
-        }
-        checkTimeAndEnableButton();
-
-    }
-
-    function showNameConfirmation() {
-        if (confirmedName) {
-            joinContest();
-            return;
-        }
-
-        if (nameInput.value.trim() === '') {
-            return;
-        }
-        nameConfirmationPopup.style.display = 'block';
-    }
-
-    function confirmAndJoin() {
-        confirmedName = nameInput.value.trim();
-        localStorage.setItem('confirmedName', confirmedName);
-        nameInput.disabled = true;
-        nameConfirmationPopup.style.display = 'none';
-        joinContest();
-    }
-
-    function cancelJoin() {
-        nameConfirmationPopup.style.display = 'none';
-        checkTimeAndEnableButton();
-
-    }
-
-    function loadConfirmedName() {
-        const storedName = localStorage.getItem('confirmedName');
-        if (storedName) {
-            confirmedName = storedName;
-            nameInput.value = confirmedName;
-            nameInput.disabled = true;
-            checkTimeAndEnableButton();
-        }
-    }
-
-    loadConfirmedName();
-
-
-    // --- Core Logic Functions ---
-
-    function joinContest() {
-        if (hasJoined) return;
-
-        joinTime = new Date(); // 参加時刻を記録
-        hasJoined = true;
-        isActive = true; // アクティブ状態にする
-        isSleeping = false;
-        joinButton.disabled = true;
-
-        startTimer();
-        startPopupChecks();
-        saveToCookie(); // 参加時に保存
-        updateRanking();
-        // 参加した日付を保存
-        localStorage.setItem('lastJoinDate', joinTime.toISOString()); //joinTimeを保存
-    }
-
-
-    function startTimer() {
-        if (timerInterval) clearInterval(timerInterval);
-
-        timerInterval = setInterval(() => {
-            const now = new Date();
-            const diff = now - baseTime; // 常に22:00(JST)からの経過時間
-
-            const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
-            const minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-            const seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
-
-            timerDisplay.textContent = `${hours}:${minutes}:${seconds}`;
-
-        }, 1000);
-    }
-
-
-
-    function startPopupChecks() {
-        if (popupInterval) clearInterval(popupInterval);
-
-        popupInterval = setInterval(() => {
-            if (isActive) { // アクティブな場合のみポップアップ
-                popup.style.display = 'block';
-                startWakeUpTimeout();
-            }
-        }, 600000);
-    }
-
-
-    function startWakeUpTimeout() {
-        if (wakeUpCheckTimeout) clearTimeout(wakeUpCheckTimeout);
-
-        wakeUpCheckTimeout = setTimeout(() => {
-            isActive = false; // 非アクティブ（寝落ち）状態に
-            isSleeping = true;
-            popup.style.display = 'none';
-            saveToCookie(); // 寝落ち時に保存
-            updateRanking();
-            clearInterval(popupInterval); // ポップアップ停止
-            joinButton.disabled = true; // この日は再参加不可に
-        }, 120000);
-    }
-
-    function confirmWakeUp() {
-        clearTimeout(wakeUpCheckTimeout);
-        popup.style.display = 'none';
-        isSleeping = false; // 起きた状態に
-        saveToCookie(); // 起きたことを保存
-        updateRanking();
-    }
-
-    // --- Cookie and Ranking ---
-
-    function saveToCookie() {
-        const now = new Date();
-        // 22:00(JST)からの経過時間をミリ秒で計算
-        const elapsedTime = now - baseTime;
-
-        const data = {
-            name: confirmedName,
-            time: elapsedTime, // ミリ秒単位で保存
-            joinTime: joinTime.toISOString() //参加時間
-        };
-
-        const cookieData = `${encodeURIComponent(data.name)}=${data.time};${data.joinTime};`; //joinTimeも保存
-        document.cookie = cookieData + "path=/;max-age=" + (60 * 60 * 24 * 365);
-    }
-
-    function loadFromCookie() {
-        const cookies = document.cookie.split(';');
-        let rankingData = [];
-
-        for (const cookie of cookies) {
-            const [namePart, rest] = cookie.trim().split('=');
-            const name = decodeURIComponent(namePart);
-
-            if (rest) {
-                const [timeString, joinTimeString] = rest.split(';');
-
-                try {
-                    const time = parseInt(timeString, 10); // ミリ秒単位の数値としてパース
-                    const joinTime = new Date(joinTimeString);
-
-                    if (!isNaN(time) && !isNaN(joinTime.getTime())) {
-                        // HH:MM:SS 形式に変換
-                        const hours = String(Math.floor(time / (1000 * 60 * 60))).padStart(2, '0');
-                        const minutes = String(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60))).padStart(2,
-                            '0');
-                        const seconds = String(Math.floor((time % (1000 * 60)) / 1000)).padStart(2, '0');
-                        const displayTime = `${hours}:${minutes}:${seconds}`;
-
-                        rankingData.push({
-                            name,
-                            time,
-                            displayTime,
-                            joinTime
-                        }); // displayTime を追加
-
-                    }
-                } catch (error) {
-                    console.error("Error parsing cookie data:", error);
-                    document.cookie = namePart + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            if (lastJoinDate) {
+                const lastDate = new Date(lastJoinDate);
+                // 日付が変わっていれば再参加可能
+                if (now.getDate() !== lastDate.getDate() || now.getMonth() !== lastDate.getMonth() || now.getFullYear() !== lastDate.getFullYear()) {
+                    hasJoined = false;
+                    isActive = false;
+                    localStorage.removeItem('lastJoinDate');
+                } else {
+                    joinButton.disabled = true;
                 }
             }
         }
-        return rankingData;
-    }
 
 
+        // --- Name Input and Confirmation ---
 
+        function handleNameInput() {
+            if (confirmedName) {
+                nameInput.value = confirmedName;
+                return;
+            }
+            checkTimeAndEnableButton();
+        }
 
-    function updateRanking() {
-        let rankingData = loadFromCookie();
+        function showNameConfirmation() {
+            if (confirmedName) {
+                joinContest();
+                return;
+            }
+            if (nameInput.value.trim() === '') {
+                return;
+            }
+            nameConfirmationPopup.style.display = 'block';
+        }
 
-        // 経過時間でソート (timeはミリ秒単位なので、数値として比較)
-        rankingData.sort((a, b) => b.time - a.time);
+        function confirmAndJoin() {
+            confirmedName = nameInput.value.trim();
+            localStorage.setItem('confirmedName', confirmedName);
+            nameInput.disabled = true;
+            nameConfirmationPopup.style.display = 'none';
+            joinContest();
+        }
 
-        rankingTable.innerHTML = '';
+        function cancelJoin() {
+            nameConfirmationPopup.style.display = 'none';
+            checkTimeAndEnableButton();
+        }
 
-        rankingData.forEach((entry, index) => {
-            const row = rankingTable.insertRow();
-            const rankCell = row.insertCell();
-            const nameCell = row.insertCell();
-            const timeCell = row.insertCell();
+        function loadConfirmedName() {
+            const storedName = localStorage.getItem('confirmedName');
+            if (storedName) {
+                confirmedName = storedName;
+                nameInput.value = confirmedName;
+                nameInput.disabled = true;
+                checkTimeAndEnableButton();
+            }
+        }
 
-            rankCell.textContent = index + 1;
-            nameCell.textContent = entry.name;
-            timeCell.textContent = entry.displayTime; // displayTime を表示
-        });
-    }
+        // --- Core Logic Functions ---
 
-    updateRanking();
+        function joinContest() {
+            if (hasJoined) return;
 
-    const noSleepScript = document.createElement('script');
-    noSleepScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js';
-    document.head.appendChild(noSleepScript);
+            joinTime = new Date();
+            hasJoined = true;
+            isActive = true;
+            isSleeping = false;
+            joinButton.disabled = true;
 
-    // ページ読み込み時/リロード時にタイマーを復元
-    window.addEventListener('load', () => {
-        if (hasJoined && isActive) {
+            console.log("joinContest - now", new Date()); //debug
+
             startTimer();
             startPopupChecks();
+            saveToCookie();
+            updateRanking();
+            localStorage.setItem('lastJoinDate', new Date().toISOString());
         }
-        //名前とボタンの状態を復元
-        loadConfirmedName();
-    });
-                        </script>
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                const now = new Date();
+                const diff = now - baseTime;
+
+                const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
+                const minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                const seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
+
+                timerDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        function startPopupChecks() {
+            if (popupInterval) clearInterval(popupInterval);
+
+            popupInterval = setInterval(() => {
+                if (isActive) {
+                    popup.style.display = 'block';
+                    startWakeUpTimeout();
+                }
+            }, 600000);
+        }
+
+        function startWakeUpTimeout() {
+            if (wakeUpCheckTimeout) clearTimeout(wakeUpCheckTimeout);
+
+            wakeUpCheckTimeout = setTimeout(() => {
+                isActive = false;
+                isSleeping = true;
+                popup.style.display = 'none';
+                saveToCookie();
+                updateRanking();
+                clearInterval(popupInterval);
+                joinButton.disabled = true;
+            }, 120000);
+        }
+
+        function confirmWakeUp() {
+            clearTimeout(wakeUpCheckTimeout);
+            popup.style.display = 'none';
+            isSleeping = false;
+            saveToCookie();
+            updateRanking();
+        }
+
+        // --- Cookie and Ranking ---
+
+        function saveToCookie() {
+            const now = new Date();
+            // 22:00からの経過時間をミリ秒で計算
+            const elapsedTime = now - baseTime;
+
+            const data = {
+                name: confirmedName,
+                time: elapsedTime,
+                joinTime: joinTime.toISOString()
+            };
+
+            const cookieData = `${encodeURIComponent(data.name)}=${data.time};${data.joinTime};`;
+            document.cookie = cookieData + "path=/;max-age=" + (60 * 60 * 24 * 365);
+        }
+
+        function loadFromCookie() {
+            const cookies = document.cookie.split(';');
+            let rankingData = [];
+
+            for (const cookie of cookies) {
+                const [namePart, rest] = cookie.trim().split('=');
+                const name = decodeURIComponent(namePart);
+
+                if (rest) {
+                    const [timeString, joinTimeString] = rest.split(';');
+
+                    try {
+                        const time = parseInt(timeString, 10);
+                        const joinTime = new Date(joinTimeString);
+
+                        if (!isNaN(time) && !isNaN(joinTime.getTime())) {
+                            const hours = String(Math.floor(time / (1000 * 60 * 60))).padStart(2, '0');
+                            const minutes = String(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                            const seconds = String(Math.floor((time % (1000 * 60)) / 1000)).padStart(2, '0');
+                            const displayTime = `${hours}:${minutes}:${seconds}`;
+
+                            rankingData.push({ name, time, displayTime, joinTime });
+                        }
+                    } catch (error) {
+                        console.error("Error parsing cookie data:", error);
+                        document.cookie = namePart + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    }
+                }
+            }
+            return rankingData;
+        }
+
+        function updateRanking() {
+            let rankingData = loadFromCookie();
+
+            rankingData.sort((a, b) => b.time - a.time);
+
+            rankingTable.innerHTML = '';
+
+            rankingData.forEach((entry, index) => {
+                const row = rankingTable.insertRow();
+                const rankCell = row.insertCell();
+                const nameCell = row.insertCell();
+                const timeCell = row.insertCell();
+
+                rankCell.textContent = index + 1;
+                nameCell.textContent = entry.name;
+                timeCell.textContent = entry.displayTime;
+            });
+        }
+
+        // ページ読み込み時/リロード時にタイマーを復元、サーバー時刻を取得
+        window.addEventListener('load', () => {
+            getServerTime(); // サーバー時刻を取得
+            if (hasJoined && isActive) {
+                startTimer();
+                startPopupChecks();
+            }
+            loadConfirmedName(); //名前
+             // NoSleep.js は常時有効化 (load時だけでなく、最初から)
+            enableNoSleep();
+        });
+
+    </script>
 </body>
 
 </html>
