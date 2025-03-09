@@ -46,7 +46,7 @@ async function getServerTime() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        serverTime = new Date(data.time);
+        serverTime = new Date(data.time); // そのまま Date オブジェクトにする (JST)
         lastServerTimeUpdate = Date.now();
         console.log("Server Time (JST):", serverTime);
 
@@ -82,7 +82,7 @@ function setBaseTime() {
 function checkTimeAndEnableButton() {
     if (!serverTime) return;
 
-    const now = new Date(serverTime.getTime());
+    const now = new Date(serverTime.getTime()); // JST
     const today22h = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
     const tomorrow22h = new Date(today22h);
     tomorrow22h.setDate(tomorrow22h.getDate() + 1);
@@ -108,13 +108,14 @@ function checkTimeAndEnableButton() {
 function checkIfCanRejoin() {
     const lastJoinDate = localStorage.getItem('lastJoinDate');
     if (!serverTime) return;
-    const now = new Date(serverTime.getTime());
+    const now = new Date(serverTime.getTime()); //JST
 
     console.log("checkIfCanRejoin - lastJoinDate:", lastJoinDate);
     console.log("checkIfCanRejoin - now:", now);
 
     if (lastJoinDate) {
         const lastDate = new Date(lastJoinDate);
+        // 日付のみ比較
         if (now.getDate() !== lastDate.getDate() || now.getMonth() !== lastDate.getMonth() || now.getFullYear() !== lastDate.getFullYear()) {
             hasJoined = false;
             isActive = false;
@@ -135,7 +136,7 @@ function startCountdown() {
         return;
     }
 
-    const now = new Date(serverTime.getTime());
+    const now = new Date(serverTime.getTime()); //JST
     let diff = baseTime - now;
 
     if (diff < 0) {
@@ -151,7 +152,7 @@ function startCountdown() {
             clearInterval(countdownInterval);
             return;
         }
-        const now = new Date(serverTime.getTime());
+        const now = new Date(serverTime.getTime()); //JST
         let diff = baseTime - now;
 
         if (diff < 0) {
@@ -164,7 +165,6 @@ function startCountdown() {
         updateCountdownDisplay(diff);
     }, 1000);
 }
-
 
 function updateCountdownDisplay(diff) {
     const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
@@ -223,27 +223,23 @@ function loadConfirmedName() {
 
 window.addEventListener('load', () => {
     loadConfirmedName();
-    getServerTime();
+    getServerTime().then(() => { // getServerTime() が完了してから以下を実行
 
-    hasJoined = localStorage.getItem('hasJoined') === 'true';
-    isActive = localStorage.getItem('isActive') === 'true';
-    const joinTimeStr = localStorage.getItem('joinTime');
-    if (joinTimeStr) {
-        joinTime = new Date(joinTimeStr);
-    }
+        hasJoined = localStorage.getItem('hasJoined') === 'true';
+        isActive = localStorage.getItem('isActive') === 'true';
+        const joinTimeStr = localStorage.getItem('joinTime');
 
-    if (hasJoined && isActive) {
-        startTimer();
-        startPopupChecks(true); // 参加中の場合は、ポップアップチェックをすぐに開始しない
-    }
-    enableNoSleep();
-
-    setInterval(() => {
-        // 60秒ごと、またはサーバー時刻がない場合に更新
-        if (Date.now() - lastServerTimeUpdate >= 60000 || !serverTime) {
-            getServerTime();
+        if (joinTimeStr) {
+            joinTime = new Date(joinTimeStr);
         }
-    }, 1000); // 1秒ごとに確認
+
+        if (hasJoined && isActive) {
+            startTimer();
+            startPopupChecks(true);
+        }
+        enableNoSleep();
+    });
+        //定期実行は削除
 });
 
 // --- Core Logic Functions ---
@@ -251,7 +247,7 @@ window.addEventListener('load', () => {
 function joinContest() {
     if (hasJoined || !serverTime) return;
 
-    joinTime = new Date(serverTime.getTime());
+    joinTime = new Date(serverTime.getTime());  // JST
     hasJoined = true;
     isActive = true;
     isSleeping = false;
@@ -280,7 +276,7 @@ function startTimer() {
             clearInterval(timerInterval);
             return;
         }
-        const now = new Date(serverTime.getTime());
+        const now = new Date(serverTime.getTime()); // JST
         const diff = now - baseTime;
 
         const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
@@ -317,7 +313,6 @@ function startPopupChecks(skipFirst = false) {
     }
 }
 
-
 function startWakeUpTimeout() {
     if (wakeUpCheckTimeout) clearTimeout(wakeUpCheckTimeout);
 
@@ -351,7 +346,7 @@ function confirmWakeUp() {
 
 function saveToCookie() {
     if (!serverTime) return;
-    const now = new Date(serverTime.getTime());
+    const now = new Date(serverTime.getTime()); //JST
     const elapsedTime = now - baseTime;
 
     const data = {
