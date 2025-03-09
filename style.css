@@ -1,0 +1,243 @@
+/* Reset and basic styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Google Sans', sans-serif;
+    background-color: #121212;
+    color: #e8eaed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    width: 90%;
+    max-width: 600px;
+    padding: 40px;
+    box-sizing: border-box;
+    text-align: center;
+    background-color: #202124;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+    font-size: 3.5em;
+    margin-bottom: 0.5em;
+    color: #8ab4f8;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 5px #8ab4f8, 0 0 10px #8ab4f8, 0 0 15px #8ab4f8;
+    }
+
+    to {
+        text-shadow: 0 0 10px #8ab4f8, 0 0 20px #8ab4f8, 0 0 25px #8ab4f8;
+    }
+}
+
+#nameInput {
+    background-color: #3c4043;
+    color: #e8eaed;
+    border: 2px solid #5f6368;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    font-size: 1.1em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#nameInput:focus {
+    border-color: #8ab4f8;
+    box-shadow: 0 0 8px rgba(138, 180, 248, 0.6);
+    outline: none;
+}
+
+#joinButton {
+    background-color: #8ab4f8;
+    color: #202124;
+    border: none;
+    border-radius: 10px;
+    padding: 18px 35px;
+    cursor: pointer;
+    font-weight: 700;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    font-size: 1.2em;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+#joinButton:disabled {
+    background-color: #5f6368;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+#joinButton:hover:not(:disabled) {
+    background-color: #9ac2ff;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+#joinButton:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#timerDisplay {
+    font-size: 3em;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    color: #e8eaed;
+    font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+#startTimerDisplay {
+    font-size: 1.2em;
+    margin-bottom: 40px;
+    color: #aaa;
+    white-space: nowrap;
+}
+
+#rankingTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 50px;
+}
+
+#rankingTable th,
+#rankingTable td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #5f6368;
+    text-align: left;
+    transition: background-color 0.3s ease;
+}
+
+#rankingTable th {
+    background-color: #3c4043;
+    font-weight: 700;
+    border-radius: 10px 10px 0 0;
+    color: #e8eaed;
+}
+
+#rankingTable td:first-child {
+    font-weight: 700;
+    color: #8ab4f8;
+}
+
+#rankingTable tr:nth-child(-n+3) td:first-child::before {
+    content: "🏆 ";
+    animation: trophy-rotate 2s linear infinite;
+}
+
+@keyframes trophy-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#rankingTable tr:hover:not(:first-child) {
+    background-color: #303134;
+}
+
+/* Popup Styles */
+#popup,
+#nameConfirmationPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #3c4043;
+    border: 2px solid #5f6368;
+    border-radius: 15px;
+    padding: 40px 50px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: none;
+    max-width: 95%;
+    text-align: center;
+}
+
+#popup button,
+#nameConfirmationPopup button {
+    background-color: #8ab4f8;
+    color: #202124;
+    border: none;
+    border-radius: 8px;
+    padding: 15px 30px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 25px;
+    font-size: 1.1em;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+#popup button:hover,
+#nameConfirmationPopup button:hover {
+    background-color: #9ac2ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+#nameConfirmationPopup p {
+    margin-bottom: 2em;
+    font-size: 1.2em;
+    line-height: 1.5;
+}
+
+#popup p {
+    font-size: 1.3em;
+    margin-bottom: 1.5em;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.8em;
+    }
+
+    #timerDisplay {
+        font-size: 2.5em;
+    }
+
+    #startTimerDisplay {
+        font-size: 1em;
+    }
+
+    #rankingTable th,
+    #rankingTable td {
+        padding: 12px 18px;
+    }
+
+    .container {
+        padding: 30px;
+    }
+
+    #popup,
+    #nameConfirmationPopup {
+        width: 98%;
+        padding: 30px;
+    }
+
+    #nameInput,
+    #joinButton {
+        font-size: 1em;
+    }
+}
