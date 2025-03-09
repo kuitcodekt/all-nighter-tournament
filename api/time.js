@@ -17,7 +17,6 @@ export default async function handler(req, res) {
     console.error("Error fetching time from World Time API:", error);
     // エラー時は、サーバー自身の時刻を返す (フォールバック)
     const now = new Date();
-    now.setHours(now.getUTCHours() + 9); // JSTに変換
     res.status(500).json({ time: now.toISOString(), error: "Failed to fetch time from World Time API" });
   }
 }
