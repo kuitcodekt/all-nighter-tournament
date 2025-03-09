@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Error fetching time from World Time API:", error);
     const now = new Date();
-    now.setHours(now.getUTCHours() + 0);
+    now.setHours(now.getUTCHours() + 9);
     res.status(500).json({ time: now.toISOString(), error: "Failed to fetch time from World Time API" });
   }
 }
