@@ -7,7 +7,7 @@
     <title>オール対決</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap">
     <style>
-        /* (CSSは変更なし) */
+        /* Reset and basic styles */
         body {
           margin: 0;
           padding: 0;
@@ -343,6 +343,7 @@
             }
         }
 
+
         function setBaseTime() {
             if (!serverTime) return;
             baseTime = new Date(serverTime.getFullYear(), serverTime.getMonth(), serverTime.getDate(), 22, 0, 0);
@@ -358,6 +359,11 @@
             if (!serverTime) return;
 
             const now = new Date(serverTime.getTime());
+            const today22h = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
+            const tomorrow22h = new Date(today22h);
+            tomorrow22h.setDate(tomorrow22h.getDate() + 1);
+
+            console.log("checkTimeAndEnableButton - now:", now); //debug
 
             if (hasJoined && isActive) {
                 joinButton.textContent = "参加中";
@@ -365,26 +371,27 @@
                 return;
             }
 
-            if (now >= baseTime && (now.getHours() < 22 || (now.getHours() === 22 && now.getMinutes() === 0 && now.getSeconds() ===0))) {
-              //翌日の0:00から21:59:59まで
-                joinButton.disabled = true;
-                joinButton.textContent = "参加する";
-                checkIfCanRejoin(); // 日付が変わっているか確認
-            } else if (now.getHours() >= 22 || now.getHours() < 2) {
-                //22:00:00~25:59:59(翌2:00)の間
+            if (now >= today22h && now < tomorrow22h) {
+                // 22:00 から翌日の 22:00 の間
                 joinButton.textContent = confirmedName ? "参加可能" : "名前を設定";
                 joinButton.disabled = false;
-
-            }else{
-               joinButton.disabled = true;
+                checkIfCanRejoin();
+            } else {
+                // 22:00 より前、または翌日の22：00以降
+                joinButton.disabled = true;
                 joinButton.textContent = "参加する";
             }
         }
+
+
 
         function checkIfCanRejoin() {
             const lastJoinDate = localStorage.getItem('lastJoinDate');
             if (!serverTime) return;
             const now = new Date(serverTime.getTime());
+
+            console.log("checkIfCanRejoin - lastJoinDate:", lastJoinDate); //debug
+            console.log("checkIfCanRejoin - now:", now); //debug
 
             if (lastJoinDate) {
                 const lastDate = new Date(lastJoinDate);
@@ -404,7 +411,7 @@
 
         function startCountdown() {
             if (!serverTime || (hasJoined && isActive)) {
-                startTimerDisplay.textContent = ""; // 参加中またはサーバー時刻がない場合は非表示
+                startTimerDisplay.textContent = "";
                 return;
             }
 
@@ -416,7 +423,7 @@
                 return;
             }
 
-            // 即時表示 (setIntervalの前に一度)
+            // 即時表示
             updateCountdownDisplay(diff);
 
             const countdownInterval = setInterval(() => {
@@ -435,10 +442,8 @@
                 }
 
                 updateCountdownDisplay(diff);
-
             }, 1000);
         }
-
 
         function updateCountdownDisplay(diff) {
             const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
@@ -494,35 +499,8 @@
                 nameInput.disabled = true;
             }
         }
-
-        window.addEventListener('load', () => {
-            loadConfirmedName();
-            getServerTime();
-
-            hasJoined = localStorage.getItem('hasJoined') === 'true';
-            isActive = localStorage.getItem('isActive') === 'true';
-            const joinTimeStr = localStorage.getItem('joinTime');
-            if (joinTimeStr) {
-                joinTime = new Date(joinTimeStr);
-            }
-
-            if (hasJoined && isActive) {
-                startTimer();
-                startPopupChecks(true); // 参加中の場合は、ポップアップチェックをすぐに開始しない
-            }
-            enableNoSleep();
-
-            setInterval(() => {
-                // 60秒ごと、またはサーバー時刻がない場合に更新
-                if (Date.now() - lastServerTimeUpdate >= 60000 || !serverTime) {
-                    getServerTime();
-                }
-            }, 1000); // 1秒ごとに確認
-        });
-
-        // --- Core Logic Functions ---
-
-        function joinContest() {
+        // --- 参加、タイマー ---
+       function joinContest() {
             if (hasJoined || !serverTime) return;
 
             joinTime = new Date(serverTime.getTime());
@@ -564,18 +542,17 @@
                 timerDisplay.textContent = `${hours}:${minutes}:${seconds}`;
             }, 1000);
         }
-        // ポップアップを出す関数
+
+        // --- ポップアップ、寝落ち判定 ---
         function startPopupChecks(skipFirst = false) {
             if (popupInterval) clearInterval(popupInterval);
 
             if (skipFirst) {
-                // 参加直後は10分後にポップアップ
                 setTimeout(() => {
                     if (isActive) {
                         popup.style.display = 'block';
                         startWakeUpTimeout();
                     }
-                    // その後は通常通り10分間隔
                     popupInterval = setInterval(() => {
                         if (isActive) {
                             popup.style.display = 'block';
@@ -584,7 +561,6 @@
                     }, 600000);
                 }, 600000);
             } else {
-
                 popupInterval = setInterval(() => {
                     if (isActive) {
                         popup.style.display = 'block';
@@ -605,7 +581,7 @@
                 saveToCookie();
                 updateRanking();
                 clearInterval(timerInterval);
-                timerDisplay.textContent = "00:00:00";
+                timerDisplay.textContent = "00:00:00"; // タイマー表示リセット
                 clearInterval(popupInterval);
                 joinButton.disabled = true;
                 joinButton.textContent = "再参加は22:00以降";
@@ -621,9 +597,7 @@
             isSleeping = false;
             saveToCookie();
             updateRanking();
-            checkTimeAndEnableButton();
-             // 起きたらサーバー時刻を更新
-            getServerTime();
+            getServerTime(); // 起きたら時刻更新
         }
 
         // --- Cookie and Ranking ---
@@ -637,10 +611,10 @@
                 name: confirmedName,
                 time: elapsedTime,
                 joinTime: joinTime.toISOString(),
-                isActive: isActive, // 寝落ち状態も保存
+                isActive: isActive,
             };
 
-            const cookieData = `${encodeURIComponent(data.name)}=${data.time};${data.joinTime};${data.isActive};`; // isActive を追加
+            const cookieData = `${encodeURIComponent(data.name)}=${data.time};${data.joinTime};${data.isActive};`;
             document.cookie = cookieData + "path=/;max-age=" + (60 * 60 * 24 * 365);
         }
 
@@ -660,7 +634,6 @@
                         const joinTime = new Date(joinTimeString);
                         const isActive = isActiveString === 'true';
 
-                        // 寝落ちしていないデータのみランキングに追加
                         if (!isNaN(time) && !isNaN(joinTime.getTime()) && isActive) {
                             const hours = String(Math.floor(time / (1000 * 60 * 60))).padStart(2, '0');
                             const minutes = String(Math.floor((time % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
@@ -696,6 +669,31 @@
                 timeCell.textContent = entry.displayTime;
             });
         }
+
+          // --- 起動時処理 ---
+        window.addEventListener('load', () => {
+            loadConfirmedName();
+            getServerTime(); // サーバー時刻取得 (定期更新もここで開始)
+
+            hasJoined = localStorage.getItem('hasJoined') === 'true';
+            isActive = localStorage.getItem('isActive') === 'true';
+            const joinTimeStr = localStorage.getItem('joinTime');
+            if (joinTimeStr) {
+                joinTime = new Date(joinTimeStr);
+            }
+            if (hasJoined && isActive) {
+                startTimer();
+                startPopupChecks(true); // 参加中の場合は、ポップアップチェックをすぐに開始しない
+            }
+            enableNoSleep();
+
+            setInterval(() => {
+                // 60秒ごと、またはサーバー時刻がない場合に更新
+                if (Date.now() - lastServerTimeUpdate >= 60000 || !serverTime) {
+                    getServerTime();
+                }
+            }, 1000); // 1秒ごとに確認
+        });
     </script>
     <script src="nosleep.min.js"></script>
 </body>
