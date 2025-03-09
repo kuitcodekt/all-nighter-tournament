@@ -6,9 +6,12 @@ export default async function handler(req, res) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    const serverTime = new Date(data.datetime);
 
-    res.status(200).json({ time: serverTime.toISOString() }); // ISO 8601 形式で返す
+    // 正しいUTC Dateオブジェクトの作成
+    const serverTimeUTC = new Date(data.datetime);
+
+
+    res.status(200).json({ time: serverTimeUTC.toISOString() }); // ISO 8601 形式で返す
 
   } catch (error) {
     console.error("Error fetching time from World Time API:", error);
