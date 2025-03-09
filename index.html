@@ -349,7 +349,8 @@
                 return;
             }
 
-            if (now.getHours() >= 22 || now.getHours() < 24) {
+            // 22:00 から 23:59:59 の間のみ参加可能
+            if (now.getHours() >= 22 && now.getHours() < 24 ) {
                 joinButton.disabled = !confirmedName && nameInput.value.trim() === '';
                 joinButton.textContent = (!confirmedName && nameInput.value.trim() === '') ? "参加する" : "参加可能";
                 checkIfCanRejoin();
@@ -363,7 +364,6 @@
 
         function checkIfCanRejoin() {
             const lastJoinDate = localStorage.getItem('lastJoinDate');
-             setBaseTime(); // baseTimeを更新
             const now = new Date(); // JST
             now.setHours(now.getUTCHours() + 9);
 
@@ -372,12 +372,12 @@
 
             if (lastJoinDate) {
                 const lastDate = new Date(lastJoinDate);
-                 lastDate.setHours(lastDate.getUTCHours() + 9);
+                // lastDate.setHours(lastDate.getUTCHours() + 9); //日付の比較なので不要
                 if (now.getDate() !== lastDate.getDate() || now.getMonth() !== lastDate.getMonth() || now.getFullYear() !== lastDate.getFullYear()) {
                     hasJoined = false;
                     isActive = false;
                     localStorage.removeItem('lastJoinDate');
-                     localStorage.removeItem('joinTime'); // joinTimeも削除
+                    localStorage.removeItem('joinTime'); // joinTimeも削除
                     localStorage.removeItem('hasJoined'); // hasJoinedも削除
                     localStorage.removeItem('isActive');  // isActiveも削除
                 } else {
@@ -411,14 +411,14 @@
                     clearInterval(countdownInterval);
                     startTimerDisplay.textContent = "開始しました！";
                     checkTimeAndEnableButton(); // 22:00 になったらボタンの状態を更新
-                    return;
+                return;
                 }
 
                 const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
                 const minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
                 const seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
 
-                startTimerDisplay.textContent = `開始まで: <span class="math-inline">\{hours\}\:</span>{minutes}:${seconds}`;
+                startTimerDisplay.textContent = `開始まで: ${hours}:${minutes}:${seconds}`;
 
             }, 1000);
         }
@@ -599,7 +599,7 @@
                     try {
                         const time = parseInt(timeString, 10);
                         const joinTime = new Date(joinTimeString);
-                         joinTime.setHours(joinTime.getUTCHours()+9); //ここでJSTに戻す
+                        // joinTime.setHours(joinTime.getUTCHours()+9); //JSTにする必要はない
 
                         if (!isNaN(time) && !isNaN(joinTime.getTime())) {
                             const hours = String(Math.floor(time / (1000 * 60 * 60))).padStart(2, '0');
