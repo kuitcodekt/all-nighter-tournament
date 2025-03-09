@@ -38,6 +38,7 @@
             margin-bottom: 0.5em;
             color: #8ab4f8;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            /* Text shadow */
             animation: glow 2s ease-in-out infinite alternate;
         }
 
@@ -45,6 +46,7 @@
             from {
                 text-shadow: 0 0 5px #8ab4f8, 0 0 10px #8ab4f8, 0 0 15px #8ab4f8;
             }
+
             to {
                 text-shadow: 0 0 10px #8ab4f8, 0 0 20px #8ab4f8, 0 0 25px #8ab4f8;
             }
@@ -54,6 +56,7 @@
             background-color: #3c4043;
             color: #e8eaed;
             border: 2px solid #5f6368;
+            /* Slightly thicker border */
             border-radius: 10px; /* More rounded input */
             padding: 15px 20px; /* More padding */
             margin-bottom: 30px; /* Increased margin */
@@ -227,8 +230,7 @@
         <input type="text" id="nameInput" placeholder="名前を入力してください">
         <button id="joinButton" disabled>参加する</button>
         <div id="timerDisplay">00:00:00</div>
-        <div id="startTimerDisplay"></div>
-        <table id="rankingTable">
+        <div id="startTimerDisplay"></div>  <table id="rankingTable">
             <thead>
                 <tr>
                     <th>順位</th>
@@ -383,7 +385,7 @@
                 const minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
                 const seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
 
-                startTimerDisplay.textContent = `開始まで: ${hours}:${minutes}:${seconds}`;
+                startTimerDisplay.textContent = `開始まで: <span class="math-inline">\{hours\}\:</span>{minutes}:${seconds}`;
 
             }, 1000);
         }
