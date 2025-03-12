@@ -6,7 +6,7 @@ let hasJoined = false;
 let isActive = false;
 let isSleeping = false;
 let confirmedName = "";
-let baseTime;
+let baseTime; //クライアントのタイムゾーンでの22時
 
 const nameInput = document.getElementById('nameInput');
 const joinButton = document.getElementById('joinButton');
@@ -38,14 +38,8 @@ cancelNameButton.addEventListener('click', cancelJoin);
 
 // --- Time Management ---
 
-function getNowJST() {
-    const now = new Date();
-    now.setHours(now.getUTCHours() + 9); // クライアントの時刻をJSTに変換
-    return now;
-}
-
 function setBaseTime() {
-    const now = getNowJST();
+    const now = new Date(); // クライアントのローカルタイム
     baseTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
     if (now >= baseTime) {
         baseTime.setDate(baseTime.getDate() + 1); // 翌日の22:00に
@@ -56,12 +50,14 @@ function setBaseTime() {
 // --- UI and Event Handlers ---
 
 function checkTimeAndEnableButton() {
-    const now = getNowJST();
+    const now = new Date(); // クライアントのローカルタイム
     const today22h = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
     const tomorrow22h = new Date(today22h);
     tomorrow22h.setDate(tomorrow22h.getDate() + 1);
 
     console.log("checkTimeAndEnableButton - now:", now);
+    console.log("checkTimeAndEnableButton - today22h:", today22h);
+    console.log("checkTimeAndEnableButton - tomorrow22h:", tomorrow22h);
 
     if (hasJoined && isActive) {
         joinButton.textContent = "参加中";
@@ -81,7 +77,7 @@ function checkTimeAndEnableButton() {
 
 function checkIfCanRejoin() {
     const lastJoinDate = localStorage.getItem('lastJoinDate');
-    const now = getNowJST();
+    const now = new Date(); // クライアントのローカルタイム
 
     console.log("checkIfCanRejoin - lastJoinDate:", lastJoinDate);
     console.log("checkIfCanRejoin - now:", now);
@@ -103,7 +99,7 @@ function checkIfCanRejoin() {
 }
 
 function startCountdown() {
-    const now = getNowJST();
+    const now = new Date(); // クライアントのローカルタイム
     let diff = baseTime - now;
 
     if (diff < 0) {
@@ -114,7 +110,7 @@ function startCountdown() {
     updateCountdownDisplay(diff);
 
     const countdownInterval = setInterval(() => {
-        const now = getNowJST();
+        const now = new Date(); // クライアントのローカルタイム
         let diff = baseTime - now;
 
         if (diff < 0) {
@@ -140,7 +136,7 @@ function handleNameInput() {
         nameInput.value = confirmedName;
         return;
     }
-    checkTimeAndEnableButton();
+      checkTimeAndEnableButton();
 }
 
 function handleJoinButtonClick() {
@@ -183,9 +179,9 @@ function loadConfirmedName() {
 
 window.addEventListener('load', () => {
     loadConfirmedName();
-    setBaseTime();      // baseTime を設定
-    checkTimeAndEnableButton(); // ボタンの状態をチェック
-    startCountdown(); // カウントダウン開始
+    setBaseTime();
+    checkTimeAndEnableButton();
+    startCountdown();
 
     hasJoined = localStorage.getItem('hasJoined') === 'true';
     isActive = localStorage.getItem('isActive') === 'true';
@@ -206,7 +202,7 @@ window.addEventListener('load', () => {
 function joinContest() {
     if (hasJoined) return;
 
-    joinTime = getNowJST(); // JST
+    joinTime = new Date(); // クライアントのローカルタイム
     hasJoined = true;
     isActive = true;
     isSleeping = false;
@@ -230,7 +226,7 @@ function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
-        const now = getNowJST(); // JST
+        const now = new Date(); // クライアントのローカルタイム
         const diff = now - baseTime;
 
         const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
@@ -293,14 +289,12 @@ function confirmWakeUp() {
     isSleeping = false;
     saveToCookie();
     updateRanking();
-    setBaseTime(); // 起きたときに baseTime を更新
-    checkTimeAndEnableButton(); // ボタンの状態を更新
 }
 
 // --- Cookie and Ranking ---
 
 function saveToCookie() {
-    const now = getNowJST(); // JST
+    const now = new Date(); // クライアントのローカルタイム
     const elapsedTime = now - baseTime;
 
     const data = {
@@ -365,5 +359,3 @@ function updateRanking() {
         timeCell.textContent = entry.displayTime;
     });
 }
-
-</script>
