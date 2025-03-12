@@ -1,44 +1,49 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>オール対決</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap">
 </head>
+
 <body>
-    <div class="container">
-        <h1>オール対決</h1>
-        <input type="text" id="nameInput" placeholder="名前を入力してください">
-        <button id="joinButton" disabled>参加する</button>
-        <div id="timerDisplay">00:00:00</div>
-        <div id="startTimerDisplay"></div>
-        <table id="rankingTable">
-            <thead>
-                <tr>
-                    <th>順位</th>
-                    <th>名前</th>
-                    <th>記録</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+    <h1>オール対決</h1>
+    <div>
+        <label for="nameInput">名前: </label>
+        <input type="text" id="nameInput">
+        <button id="joinButton">名前を設定</button>
+    </div>
+    <div id="startTimerDisplay"></div>
+    <div id="timerDisplay">00:00:00</div>
+
+    <h2>ランキング</h2>
+    <table id="rankingTable">
+        <thead>
+            <tr>
+                <th>順位</th>
+                <th>名前</th>
+                <th>タイム</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <div id="popup" style="display: none;">
+        <p>起きてますかー？</p>
+        <button id="wakeUpButton">起きてる！</button>
     </div>
 
-    <div id="popup">
-        <p>起きていますか？</p>
-        <button id="wakeUpButton">起きてる</button>
-    </div>
-
-    <div id="nameConfirmationPopup">
-        <p>一度名前を登録すると、Cookieを削除しても変更できません。よろしいですか？</p>
+    <div id="nameConfirmationPopup" style="display: none;">
+        <p>この名前で参加しますか？</p>
+        <p id="confirmName"></p>
         <button id="confirmNameButton">はい</button>
-        <button id="cancelNameButton">キャンセル</button>
+        <button id="cancelNameButton">いいえ</button>
     </div>
-
     <script src="script.js"></script>
     <script src="nosleep.min.js"></script>
 </body>
+
 </html>
