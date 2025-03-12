@@ -44,13 +44,14 @@ function setBaseTime() {
     if (now >= baseTime) {
         baseTime.setDate(baseTime.getDate() + 1); // 翌日の22:00に
     }
-    console.log("setBaseTime - baseTime:", baseTime); // デバッグログ
+    console.log("setBaseTime - baseTime:", baseTime);
 }
 
 // --- UI and Event Handlers ---
+
 function checkTimeAndEnableButton() {
     const now = new Date();
-    const today22h = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0); // 今日の22時
+    const today22h = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
     const tomorrow0h = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0); // 明日の0時
 
     console.log("checkTimeAndEnableButton - now:", now);
@@ -63,15 +64,14 @@ function checkTimeAndEnableButton() {
         joinButton.disabled = true;
         return;
     }
-    //今日22時から明日0時の間
+  //今日22時から明日0時の間
     if (now >= today22h && now < tomorrow0h) {
         joinButton.textContent = confirmedName ? "参加可能" : "名前を設定";
-        joinButton.disabled = false;
+        joinButton.disabled = !confirmedName; // 名前未設定なら disabled のまま
         checkIfCanRejoin();
     } else {
         joinButton.disabled = true;
-        joinButton.textContent = confirmedName ? "参加する" : "名前を設定"; //名前があるかないかで判断
-
+          joinButton.textContent = confirmedName ? "参加する" : "名前を設定";
     }
 }
 
@@ -85,7 +85,6 @@ function checkIfCanRejoin() {
     if (lastJoinDate) {
         const lastDate = new Date(lastJoinDate);
         if (now.getDate() !== lastDate.getDate() || now.getMonth() !== lastDate.getMonth() || now.getFullYear() !== lastDate.getFullYear()) {
-            //日付が変わったらリセット
             hasJoined = false;
             isActive = false;
             localStorage.removeItem('lastJoinDate');
@@ -93,7 +92,6 @@ function checkIfCanRejoin() {
             localStorage.removeItem('hasJoined');
             localStorage.removeItem('isActive');
         } else {
-            //前回の参加が今日だったら
             joinButton.disabled = true;
             joinButton.textContent = "再参加は22:00以降";
         }
@@ -102,11 +100,7 @@ function checkIfCanRejoin() {
 
 function startCountdown() {
     const now = new Date();
-    let diff = baseTime - now; // baseTime は常に明日の 22:00
-
-    console.log("startCountdown - now:", now); // デバッグログ
-    console.log("startCountdown - baseTime:", baseTime); // デバッグログ
-    console.log("startCountdown - diff:", diff); // デバッグログ
+    let diff = baseTime - now;
 
     if (diff < 0) {
         startTimerDisplay.textContent = "開始しました！";
@@ -138,6 +132,7 @@ function updateCountdownDisplay(diff) {
 }
 
 function handleNameInput() {
+  //名前が設定済みなら、名前入力欄は操作できない
     if (confirmedName) {
         nameInput.value = confirmedName;
         return;
@@ -146,8 +141,15 @@ function handleNameInput() {
 }
 
 function handleJoinButtonClick() {
+    const now = new Date();
+    const today22h = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
+    const tomorrow0h = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+    //22:00より前はreturn
+    if(now < today22h || now >= tomorrow0h){
+      return;
+    }
+
     if (confirmedName) {
-        // if (hasJoined && isActive) return; //このチェックは不要
         joinContest();
     } else {
         showNameConfirmation();
@@ -155,7 +157,12 @@ function handleJoinButtonClick() {
 }
 
 function showNameConfirmation() {
+  //名前が空ならポップアップは表示しない
     if (nameInput.value.trim() === '') {
+        return;
+    }
+    //名前が確定済みなら、ポップアップは表示しない
+    if (confirmedName) {
         return;
     }
     nameConfirmationPopup.style.display = 'block';
@@ -171,7 +178,7 @@ function confirmAndJoin() {
 
 function cancelJoin() {
     nameConfirmationPopup.style.display = 'none';
-    checkTimeAndEnableButton(); // キャンセル時も状態を更新
+    checkTimeAndEnableButton();
 }
 
 function loadConfirmedName() {
@@ -185,9 +192,9 @@ function loadConfirmedName() {
 
 window.addEventListener('load', () => {
     loadConfirmedName();
-    setBaseTime();        // baseTime を設定
-    checkTimeAndEnableButton(); // load イベントでボタンの状態をチェック
-    startCountdown();     // カウントダウンを開始
+    setBaseTime();
+    checkTimeAndEnableButton(); // 状態をチェック
+    startCountdown();
 
     hasJoined = localStorage.getItem('hasJoined') === 'true';
     isActive = localStorage.getItem('isActive') === 'true';
@@ -198,7 +205,7 @@ window.addEventListener('load', () => {
 
     if (hasJoined && isActive) {
         startTimer();
-        startPopupChecks(true); // 参加中の場合は、ポップアップチェックをすぐに開始しない
+        startPopupChecks(true);
     }
     enableNoSleep();
 });
@@ -206,23 +213,23 @@ window.addEventListener('load', () => {
 // --- Core Logic Functions ---
 
 function joinContest() {
-    if (hasJoined) return; // 二重参加防止
+    if (hasJoined) return;
 
-    joinTime = new Date(); // 現在時刻で joinTime を設定
+    joinTime = new Date();
     hasJoined = true;
     isActive = true;
     isSleeping = false;
     joinButton.disabled = true;
     joinButton.textContent = "参加中";
-    startTimerDisplay.textContent = ""; // カウントダウンを消す
+    startTimerDisplay.textContent = "";
 
     console.log("joinContest - now", joinTime);
 
     startTimer();
-    startPopupChecks(true); // 参加直後はポップアップなし
+    startPopupChecks(true);
     saveToCookie();
     updateRanking();
-    localStorage.setItem('lastJoinDate', joinTime.toISOString()); //参加した時の日付
+    localStorage.setItem('lastJoinDate', joinTime.toISOString());
     localStorage.setItem('hasJoined', 'true');
     localStorage.setItem('isActive', 'true');
     localStorage.setItem('joinTime', joinTime.toISOString());
@@ -247,13 +254,11 @@ function startPopupChecks(skipFirst = false) {
     if (popupInterval) clearInterval(popupInterval);
 
     if (skipFirst) {
-        // 参加直後は10分後にポップアップ
         setTimeout(() => {
             if (isActive) {
                 popup.style.display = 'block';
                 startWakeUpTimeout();
             }
-            // その後は通常通り10分間隔
             popupInterval = setInterval(() => {
                 if (isActive) {
                     popup.style.display = 'block';
@@ -262,7 +267,6 @@ function startPopupChecks(skipFirst = false) {
             }, 600000);
         }, 600000);
     } else {
-        // 通常はすぐにポップアップチェックを開始
         popupInterval = setInterval(() => {
             if (isActive) {
                 popup.style.display = 'block';
@@ -282,7 +286,7 @@ function startWakeUpTimeout() {
         saveToCookie();
         updateRanking();
         clearInterval(timerInterval);
-        timerDisplay.textContent = "00:00:00"; // タイマー表示リセット
+        timerDisplay.textContent = "00:00:00";
         clearInterval(popupInterval);
         joinButton.disabled = true;
         joinButton.textContent = "再参加は22:00以降";
@@ -310,7 +314,7 @@ function saveToCookie() {
         name: confirmedName,
         time: elapsedTime,
         joinTime: joinTime.toISOString(),
-        isActive: isActive, // 寝落ち状態も保存
+        isActive: isActive,
     };
 
     const cookieData = `${encodeURIComponent(data.name)}=${data.time};${data.joinTime};${data.isActive};`;
