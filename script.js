@@ -31,7 +31,7 @@ document.addEventListener('touchstart', enableNoSleep, false);
 document.addEventListener('click', enableNoSleep, false);
 
 nameInput.addEventListener('input', handleNameInput);
-joinButton.addEventListener('click', handleJoinButtonClick);
+joinButton.addEventListener('click', handleJoinButtonClick); // 変更: 共通のハンドラを使用
 wakeUpButton.addEventListener('click', confirmWakeUp);
 confirmNameButton.addEventListener('click', confirmAndJoin);
 cancelNameButton.addEventListener('click', cancelJoin);
@@ -39,26 +39,23 @@ cancelNameButton.addEventListener('click', cancelJoin);
 // --- Time Management ---
 
 function setBaseTime() {
-    const now = new Date(); // クライアントのローカルタイム
+    const now = new Date();
     baseTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
-     // baseTime が過去の場合、翌日の22時に設定
     if (now >= baseTime) {
         baseTime.setDate(baseTime.getDate() + 1);
     }
-    console.log("setBaseTime - baseTime:", baseTime); // デバッグログ
+    console.log("baseTime:", baseTime);
 }
 
 // --- UI and Event Handlers ---
 
 function checkTimeAndEnableButton() {
-    const now = new Date(); // クライアントのローカルタイム
+    const now = new Date();
     const today22h = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
     const tomorrow22h = new Date(today22h);
     tomorrow22h.setDate(tomorrow22h.getDate() + 1);
 
     console.log("checkTimeAndEnableButton - now:", now);
-    console.log("checkTimeAndEnableButton - today22h:", today22h);
-    console.log("checkTimeAndEnableButton - tomorrow22h:", tomorrow22h);
 
     if (hasJoined && isActive) {
         joinButton.textContent = "参加中";
@@ -66,23 +63,28 @@ function checkTimeAndEnableButton() {
         return;
     }
 
-    // 参加可能時間の判定を修正
     if (now >= today22h && now < tomorrow22h) {
-        joinButton.textContent = confirmedName ? "参加可能" : "名前を設定";
-        joinButton.disabled = false;
+        // 参加可能時間帯
+        if (confirmedName) {
+            joinButton.textContent = "参加可能";
+            joinButton.disabled = false;
+        } else {
+            joinButton.textContent = "名前を設定";
+            joinButton.disabled = false; // 名前設定ボタンとして有効化
+        }
         checkIfCanRejoin();
     } else {
+        // 参加可能時間外
         joinButton.disabled = true;
-        joinButton.textContent = "参加する";
+        joinButton.textContent = confirmedName ? "参加する" : "名前を設定"; //名前があるかないかで判断
     }
 }
-
 function checkIfCanRejoin() {
     const lastJoinDate = localStorage.getItem('lastJoinDate');
-    const now = new Date(); // クライアントのローカルタイム
+    const now = new Date();
 
-    console.log("checkIfCanRejoin - lastJoinDate:", lastJoinDate); // デバッグログ
-    console.log("checkIfCanRejoin - now:", now); // デバッグログ
+    console.log("checkIfCanRejoin - lastJoinDate:", lastJoinDate);
+    console.log("checkIfCanRejoin - now:", now);
 
     if (lastJoinDate) {
         const lastDate = new Date(lastJoinDate);
@@ -101,35 +103,29 @@ function checkIfCanRejoin() {
 }
 
 function startCountdown() {
-  const now = new Date(); // クライアントのローカルタイム
-
-  // baseTime が設定されていない場合、setBaseTime() を呼び出して初期化
-  if (!baseTime) {
-    setBaseTime();
-  }
-
-  let diff = baseTime - now;
-
-  if (diff < 0) {
-    startTimerDisplay.textContent = "開始しました！";
-    return;
-  }
-
-  updateCountdownDisplay(diff);
-
-  const countdownInterval = setInterval(() => {
-    const now = new Date(); // クライアントのローカルタイム
+    const now = new Date();
     let diff = baseTime - now;
 
     if (diff < 0) {
-      clearInterval(countdownInterval);
-      startTimerDisplay.textContent = "開始しました！";
-      checkTimeAndEnableButton();
-      return;
+        startTimerDisplay.textContent = "開始しました！";
+        return;
     }
 
     updateCountdownDisplay(diff);
-  }, 1000);
+
+    const countdownInterval = setInterval(() => {
+        const now = new Date();
+        let diff = baseTime - now;
+
+        if (diff < 0) {
+            clearInterval(countdownInterval);
+            startTimerDisplay.textContent = "開始しました！";
+            checkTimeAndEnableButton();
+            return;
+        }
+
+        updateCountdownDisplay(diff);
+    }, 1000);
 }
 
 function updateCountdownDisplay(diff) {
@@ -147,20 +143,13 @@ function handleNameInput() {
     checkTimeAndEnableButton();
 }
 
+// 変更: 名前設定と参加処理を分ける
 function handleJoinButtonClick() {
-  const now = new Date(); // handleJoinButtonClickが呼ばれた時の時刻を取得
-
-  // 22時前なら参加ボタンを押せない
-  if (now.getHours() < 22) {
-    return; // 何もせず終了
-  }
-
-  if (confirmedName) {
-    if (hasJoined && isActive) return;
-    joinContest();
-  } else {
-    showNameConfirmation();
-  }
+    if (!confirmedName) {
+        showNameConfirmation();
+    } else {
+        joinContest();
+    }
 }
 
 function showNameConfirmation() {
@@ -175,12 +164,12 @@ function confirmAndJoin() {
     localStorage.setItem('confirmedName', confirmedName);
     nameInput.disabled = true;
     nameConfirmationPopup.style.display = 'none';
-    checkTimeAndEnableButton();
+    checkTimeAndEnableButton(); // 参加ボタンの状態を更新
 }
 
 function cancelJoin() {
     nameConfirmationPopup.style.display = 'none';
-    checkTimeAndEnableButton();
+    checkTimeAndEnableButton(); // キャンセル時も状態を更新
 }
 
 function loadConfirmedName() {
@@ -194,9 +183,9 @@ function loadConfirmedName() {
 
 window.addEventListener('load', () => {
     loadConfirmedName();
-    setBaseTime();      // baseTime を設定
-    checkTimeAndEnableButton(); // ボタンの状態をチェック
-    startCountdown(); // カウントダウン開始
+    setBaseTime();
+    checkTimeAndEnableButton();
+    startCountdown();
 
     hasJoined = localStorage.getItem('hasJoined') === 'true';
     isActive = localStorage.getItem('isActive') === 'true';
@@ -217,7 +206,7 @@ window.addEventListener('load', () => {
 function joinContest() {
     if (hasJoined) return;
 
-    joinTime = new Date(); // クライアントのローカルタイム
+    joinTime = new Date();
     hasJoined = true;
     isActive = true;
     isSleeping = false;
@@ -241,7 +230,7 @@ function startTimer() {
     if (timerInterval) clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
-        const now = new Date(); // クライアントのローカルタイム
+        const now = new Date();
         const diff = now - baseTime;
 
         const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
@@ -304,13 +293,13 @@ function confirmWakeUp() {
     isSleeping = false;
     saveToCookie();
     updateRanking();
-    //  checkTimeAndEnableButton(); ここでは不要
+    // checkTimeAndEnableButton();  これは削除
 }
 
 // --- Cookie and Ranking ---
 
 function saveToCookie() {
-    const now = new Date(); // クライアントのローカルタイム
+    const now = new Date();
     const elapsedTime = now - baseTime;
 
     const data = {
@@ -375,4 +364,3 @@ function updateRanking() {
         timeCell.textContent = entry.displayTime;
     });
 }
-<script src="nosleep.min.js"></script>
