@@ -6,7 +6,7 @@ let hasJoined = false;
 let isActive = false;
 let isSleeping = false;
 let confirmedName = "";
-let baseTime; //クライアントのタイムゾーンでの22時
+let baseTime;
 
 const nameInput = document.getElementById('nameInput');
 const joinButton = document.getElementById('joinButton');
@@ -41,10 +41,11 @@ cancelNameButton.addEventListener('click', cancelJoin);
 function setBaseTime() {
     const now = new Date(); // クライアントのローカルタイム
     baseTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
+     // baseTime が過去の場合、翌日の22時に設定
     if (now >= baseTime) {
-        baseTime.setDate(baseTime.getDate() + 1); // 翌日の22:00に
+        baseTime.setDate(baseTime.getDate() + 1);
     }
-    console.log("baseTime:", baseTime);
+    console.log("setBaseTime - baseTime:", baseTime); // デバッグログ
 }
 
 // --- UI and Event Handlers ---
@@ -65,6 +66,7 @@ function checkTimeAndEnableButton() {
         return;
     }
 
+    // 参加可能時間の判定を修正
     if (now >= today22h && now < tomorrow22h) {
         joinButton.textContent = confirmedName ? "参加可能" : "名前を設定";
         joinButton.disabled = false;
@@ -79,8 +81,8 @@ function checkIfCanRejoin() {
     const lastJoinDate = localStorage.getItem('lastJoinDate');
     const now = new Date(); // クライアントのローカルタイム
 
-    console.log("checkIfCanRejoin - lastJoinDate:", lastJoinDate);
-    console.log("checkIfCanRejoin - now:", now);
+    console.log("checkIfCanRejoin - lastJoinDate:", lastJoinDate); // デバッグログ
+    console.log("checkIfCanRejoin - now:", now); // デバッグログ
 
     if (lastJoinDate) {
         const lastDate = new Date(lastJoinDate);
@@ -99,29 +101,35 @@ function checkIfCanRejoin() {
 }
 
 function startCountdown() {
+  const now = new Date(); // クライアントのローカルタイム
+
+  // baseTime が設定されていない場合、setBaseTime() を呼び出して初期化
+  if (!baseTime) {
+    setBaseTime();
+  }
+
+  let diff = baseTime - now;
+
+  if (diff < 0) {
+    startTimerDisplay.textContent = "開始しました！";
+    return;
+  }
+
+  updateCountdownDisplay(diff);
+
+  const countdownInterval = setInterval(() => {
     const now = new Date(); // クライアントのローカルタイム
     let diff = baseTime - now;
 
     if (diff < 0) {
-        startTimerDisplay.textContent = "開始しました！";
-        return;
+      clearInterval(countdownInterval);
+      startTimerDisplay.textContent = "開始しました！";
+      checkTimeAndEnableButton();
+      return;
     }
 
     updateCountdownDisplay(diff);
-
-    const countdownInterval = setInterval(() => {
-        const now = new Date(); // クライアントのローカルタイム
-        let diff = baseTime - now;
-
-        if (diff < 0) {
-            clearInterval(countdownInterval);
-            startTimerDisplay.textContent = "開始しました！";
-            checkTimeAndEnableButton();
-            return;
-        }
-
-        updateCountdownDisplay(diff);
-    }, 1000);
+  }, 1000);
 }
 
 function updateCountdownDisplay(diff) {
@@ -136,16 +144,23 @@ function handleNameInput() {
         nameInput.value = confirmedName;
         return;
     }
-      checkTimeAndEnableButton();
+    checkTimeAndEnableButton();
 }
 
 function handleJoinButtonClick() {
-    if (confirmedName) {
-        if (hasJoined && isActive) return;
-        joinContest();
-    } else {
-        showNameConfirmation();
-    }
+  const now = new Date(); // handleJoinButtonClickが呼ばれた時の時刻を取得
+
+  // 22時前なら参加ボタンを押せない
+  if (now.getHours() < 22) {
+    return; // 何もせず終了
+  }
+
+  if (confirmedName) {
+    if (hasJoined && isActive) return;
+    joinContest();
+  } else {
+    showNameConfirmation();
+  }
 }
 
 function showNameConfirmation() {
@@ -179,9 +194,9 @@ function loadConfirmedName() {
 
 window.addEventListener('load', () => {
     loadConfirmedName();
-    setBaseTime();
-    checkTimeAndEnableButton();
-    startCountdown();
+    setBaseTime();      // baseTime を設定
+    checkTimeAndEnableButton(); // ボタンの状態をチェック
+    startCountdown(); // カウントダウン開始
 
     hasJoined = localStorage.getItem('hasJoined') === 'true';
     isActive = localStorage.getItem('isActive') === 'true';
@@ -289,6 +304,7 @@ function confirmWakeUp() {
     isSleeping = false;
     saveToCookie();
     updateRanking();
+    //  checkTimeAndEnableButton(); ここでは不要
 }
 
 // --- Cookie and Ranking ---
@@ -359,3 +375,4 @@ function updateRanking() {
         timeCell.textContent = entry.displayTime;
     });
 }
+<script src="nosleep.min.js"></script>
