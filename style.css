@@ -1,0 +1,50 @@
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #222, #333);
+  color: white;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  min-height: 100vh;
+}
+.container {
+  max-width: 400px;
+  margin-top: 50px;
+  padding: 2rem;
+  background: #444;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #000;
+}
+input {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+button {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #00c897;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #00a57c;
+}
+#ranking {
+  margin-top: 2rem;
+}
+#ranking-list {
+  list-style: none;
+  padding: 0;
+}
+#ranking-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #666;
+}
